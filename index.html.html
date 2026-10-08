@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>LORDZICO SMS Sender</title>
+<meta name="theme-color" content="#0B5D3B" id="tc">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SMS Sender">
+<style>
+:root[data-theme=dark]{--bg:#0F1720;--head:#0B5D3B;--card:#18232F;--field:#223140;--text:#fff;--muted:#9AA9B8;--accent:#12A150;--soft:#3A4B5C;--softtext:#fff}
+:root[data-theme=dim]{--bg:#1E2530;--head:#2B6B57;--card:#2A3340;--field:#36404F;--text:#E8EDF2;--muted:#A5B0BD;--accent:#2FAF7B;--soft:#475365;--softtext:#fff}
+:root[data-theme=light]{--bg:#F2F5F8;--head:#0B7A4B;--card:#fff;--field:#E8EEF4;--text:#17202A;--muted:#5C6B7A;--accent:#12A150;--soft:#D5DEE7;--softtext:#17202A}
+:root[data-theme=blue]{--bg:#0B1F3A;--head:#1456A0;--card:#12305A;--field:#1B3F72;--text:#fff;--muted:#9CB6D8;--accent:#1E88E5;--soft:#2A5A9A;--softtext:#fff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+header{background:var(--head);color:#fff;display:flex;align-items:center;gap:12px;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));position:sticky;top:0;z-index:5}
+header img{width:46px;height:46px;border-radius:12px}
+header b{font-size:21px;letter-spacing:1px;display:block}
+header small{opacity:.9;font-size:12.5px}
+main{max-width:640px;margin:0 auto;padding:12px}
+.card{background:var(--card);border-radius:16px;padding:14px;margin-bottom:12px}
+.card h2{margin:0 0 10px;font-size:16px;display:flex;align-items:center;gap:8px}
+.card h2 span{margin-left:auto;color:var(--accent);font-size:13px}
+svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+textarea,input[type=text],select{width:100%;background:var(--field);color:var(--text);border:0;border-radius:10px;padding:12px;font-size:16px;font-family:inherit;margin-bottom:8px}
+textarea{min-height:110px;resize:vertical}
+::placeholder{color:var(--muted)}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:12px;background:var(--accent);color:#fff;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;width:100%}
+.btn.soft{background:var(--soft);color:var(--softtext)}.btn.red{background:#D64545}
+.btn.big{padding:16px;font-size:17px;margin-bottom:12px}
+.btn:active{opacity:.75}
+.muted{color:var(--muted);font-size:13px}
+.seg{display:flex;gap:8px;margin-bottom:8px}.seg label{flex:1;background:var(--field);border-radius:10px;padding:10px;font-size:14px;text-align:center;cursor:pointer;border:2px solid transparent}
+.seg input{display:none}.seg input:checked+span{font-weight:700}.seg label:has(input:checked){border-color:var(--accent)}
+.banner{background:var(--card);border-left:5px solid var(--accent);margin:12px auto 0;max-width:616px;border-radius:12px;padding:12px;font-size:14px}
+.banner .row{margin-top:10px;flex-wrap:wrap}.banner a{text-decoration:none}
+.themes .btn{padding:9px;font-size:13px}
+footer{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;color:var(--muted);font-size:14px}
+footer img{width:30px;height:30px;border-radius:8px}
+.bar{height:12px;background:var(--field);border-radius:6px;overflow:hidden;margin:10px 0}.bar div{height:100%;background:var(--accent);width:0}
+a.btn{text-decoration:none}
+</style>
+</head>
+<body>
+<header><img src="icon-192.png" alt="Lordzico"><div><b>LORDZICO</b><small>SMS Sender &middot; free &middot; uses your own SMS credit</small></div></header>
+<div id="banner" class="banner" hidden></div>
+<main>
+ <section class="card">
+  <h2><i data-i="chat"></i>Message</h2>
+  <textarea id="msg" placeholder="Type your message here"></textarea>
+  <input type="text" id="sign" placeholder="Your business name (added at the end)">
+  <div class="row"><select id="names"></select><button class="btn soft" id="saveName"><i data-i="save"></i>Save name</button></div>
+  <div class="muted" id="chars"></div>
+ </section>
+ <section class="card">
+  <h2><i data-i="users"></i>Recipients<span id="cnt">0 numbers</span></h2>
+  <div class="row"><select id="groups"></select><button class="btn soft" id="saveGroup"><i data-i="save"></i>Save</button><button class="btn soft" id="delGroup"><i data-i="trash"></i>Delete</button></div>
+  <textarea id="nums" placeholder="Paste numbers (commas, spaces or new lines)" style="margin-top:8px"></textarea>
+  <div class="row"><label class="btn soft" for="file"><i data-i="upload"></i>Load file</label><button class="btn soft" id="clear"><i data-i="trash"></i>Clear</button></div>
+  <input type="file" id="file" accept=".csv,.txt,.tsv" hidden>
+ </section>
+ <section class="card">
+  <h2><i data-i="send"></i>How to send</h2>
+  <div class="seg">
+   <label><input type="radio" name="mode" value="one"><span>One by one<br><small class="muted">private, tap Send each time</small></span></label>
+   <label><input type="radio" name="mode" value="group"><span>One group message<br><small class="muted">everyone sees everyone</small></span></label>
+  </div>
+  <div class="muted" id="info"></div>
+ </section>
+ <button class="btn big" id="go"><i data-i="send"></i>Start sending</button>
+ <section class="card" id="run" hidden>
+  <h2><i data-i="send"></i>Sending<span id="rcount"></span></h2>
+  <div class="bar"><div id="rbar"></div></div>
+  <div id="rnext" class="muted"></div>
+  <button class="btn" id="nextBtn" style="margin-top:10px"><i data-i="send"></i>Open Messages for next number</button>
+  <button class="btn soft" id="cancelRun" style="margin-top:8px">Stop</button>
+ </section>
+ <section class="card themes">
+  <h2>Choose your colour</h2>
+  <div class="row"><button class="btn" data-t="dark" style="background:#0B5D3B">Dark</button><button class="btn" data-t="dim" style="background:#2B6B57">Dim</button><button class="btn" data-t="light" style="background:#0B7A4B">Light</button><button class="btn" data-t="blue" style="background:#1456A0">Blue</button></div>
+ </section>
+ <footer><img src="icon-192.png" alt="">Powered by <b>LORDZICO</b></footer>
+</main>
+<script>
+const APK_PAGE = "https://github.com/agyeievansboamah-code/sms-sender/releases/latest";
+const ICONS = {
+ chat:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+ users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+ send:'<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>',
+ upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+ trash:'<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
+ save:'<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>',
+ download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>'
+};
+const $ = id => document.getElementById(id);
+const KEY = "lordzico_sms_v1";
+let S = Object.assign({theme:"dark", sign:"", signs:[], groups:{}, nums:"", msg:"", mode:"one", run:null, hide:0}, JSON.parse(localStorage.getItem(KEY) || "{}"));
+const save = () => localStorage.setItem(KEY, JSON.stringify(S));
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const isAndroid = /Android/i.test(navigator.userAgent);
+const isPhone = isIOS || isAndroid;
+const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+
+function norm(t){ if(!/^\+?[\d\-().]+$/.test(t)) return null; const plus = t[0]==="+"; let d = t.replace(/\D/g,""); if(d.length===9 && !plus) d = "0"+d; return (d.length>=9 && d.length<=15) ? (plus?"+":"")+d : null; }
+function parse(text){ const seen = new Set(), out = []; for(const t of text.split(/[,\s;]+/)){ if(!t) continue; const n = norm(t); if(n && !seen.has(n)){ seen.add(n); out.push(n); } } return out; }
+function parts(m){ const u = [...m].some(c => c.charCodeAt(0) > 127); const [a,b] = u ? [70,67] : [160,153]; return m.length <= a ? 1 : Math.ceil(m.length/b); }
+function full(){ const m = $("msg").value.trim(), s = $("sign").value.trim(); return m ? (s ? m+"\n"+s : m) : ""; }
+function smsLink(nums, body){ return "sms:" + nums.join(",") + (isIOS ? "&" : "?") + "body=" + encodeURIComponent(body); }
+
+function fillSelect(sel, first, items){ sel.innerHTML = ""; const o = new Option(first, ""); sel.add(o); items.forEach(x => sel.add(new Option(x, x))); }
+function refreshLists(){ fillSelect($("names"), "Saved names", S.signs); fillSelect($("groups"), "Saved groups", Object.keys(S.groups).sort()); }
+function refresh(){
+  const n = parse($("nums").value).length, m = full(), p = m ? parts(m) : 0;
+  $("cnt").textContent = n + " number" + (n===1 ? "" : "s");
+  $("chars").textContent = m.length + " characters  |  " + p + " SMS each";
+  $("info").textContent = S.mode === "one"
+    ? "A message window opens for each number. Tap Send there, come back, tap the button again. Uses " + (n*p) + " SMS from your own credit."
+    : "One message to all " + n + " numbers opens in your Messages app. Everyone in it can see each other and reply to all.";
+  S.nums = $("nums").value; S.msg = $("msg").value; S.sign = $("sign").value; save();
+}
+function setTheme(t){ S.theme = t; document.documentElement.dataset.theme = t; $("tc").content = getComputedStyle(document.documentElement).getPropertyValue("--head").trim() || "#0B5D3B"; save(); }
+
+document.querySelectorAll("i[data-i]").forEach(el => { el.outerHTML = '<svg viewBox="0 0 24 24">' + ICONS[el.dataset.i] + '</svg>'; });
+$("msg").value = S.msg; $("sign").value = S.sign; $("nums").value = S.nums;
+document.querySelectorAll('input[name=mode]').forEach(r => { r.checked = r.value === S.mode; r.onchange = () => { S.mode = r.value; refresh(); }; });
+document.querySelectorAll("[data-t]").forEach(b => b.onclick = () => setTheme(b.dataset.t));
+["msg","sign","nums"].forEach(id => $(id).addEventListener("input", refresh));
+$("names").onchange = e => { if(e.target.value){ $("sign").value = e.target.value; e.target.value = ""; refresh(); } };
+$("saveName").onclick = () => { const n = $("sign").value.trim(); if(!n) return alert("Type your business name first."); if(!S.signs.includes(n)) S.signs.push(n); save(); refreshLists(); alert('Saved "' + n + '".'); };
+$("groups").onchange = e => { const g = e.target.value; if(g){ $("nums").value = S.groups[g].join("\n"); S.cur = g; e.target.value = ""; refresh(); alert('Group "' + g + '" loaded: ' + S.groups[g].length + ' numbers.'); } };
+$("saveGroup").onclick = () => { const nums = parse($("nums").value); if(!nums.length) return alert("Add some numbers first."); const name = (prompt("Group name, e.g. Church members", S.cur || "") || "").trim(); if(!name) return; S.groups[name] = nums; S.cur = name; save(); refreshLists(); alert('Group "' + name + '" saved with ' + nums.length + ' numbers.'); };
+$("delGroup").onclick = () => { if(!S.cur || !S.groups[S.cur]) return alert("Load a group first, then tap Delete."); if(confirm('Delete the group "' + S.cur + '"?')){ delete S.groups[S.cur]; S.cur = null; save(); refreshLists(); } };
+$("clear").onclick = () => { $("nums").value = ""; refresh(); };
+$("file").onchange = e => { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = () => { $("nums").value = ($("nums").value + "\n" + r.result).trim(); refresh(); e.target.value = ""; }; r.readAsText(f); };
+
+function drawRun(){
+  const r = S.run; if(!r){ $("run").hidden = true; return; }
+  $("run").hidden = false;
+  $("rcount").textContent = r.idx + " / " + r.list.length;
+  $("rbar").style.width = (r.idx / r.list.length * 100) + "%";
+  if(r.idx >= r.list.length){ $("rnext").textContent = "All done. Every message was opened in your Messages app."; $("nextBtn").hidden = true; $("cancelRun").textContent = "Close"; }
+  else { $("rnext").textContent = "Next: " + r.list[r.idx]; $("nextBtn").hidden = false; $("cancelRun").textContent = "Stop"; }
+}
+function nextOne(){ const r = S.run; if(!r || r.idx >= r.list.length) return; const n = r.list[r.idx]; r.idx++; save(); drawRun(); location.href = smsLink([n], r.msg); }
+$("nextBtn").onclick = nextOne;
+$("cancelRun").onclick = () => { S.run = null; save(); drawRun(); };
+$("go").onclick = () => {
+  const list = parse($("nums").value), msg = full();
+  if(!list.length || !msg) return alert("Add numbers and type a message first.");
+  if(!isPhone) alert("Open this page on your phone to send. Computers cannot send texts.");
+  if(S.mode === "group"){ location.href = smsLink(list, msg); return; }
+  S.run = {list, msg, idx:0}; save(); drawRun(); nextOne();
+};
+
+let deferred = null;
+function banner(){
+  const b = $("banner");
+  if(standalone || Date.now() < S.hide){ b.hidden = true; return; }
+  let h = "<b>Get the LORDZICO app</b><div class='muted' style='margin-top:4px'>";
+  if(isAndroid) h += "The Android app sends your whole group automatically. You can also install this website like an app.</div><div class='row'><a class='btn' href='" + APK_PAGE + "'><svg viewBox='0 0 24 24'>" + ICONS.download + "</svg>Download Android app</a>" + (deferred ? "<button class='btn soft' id='inst'>Install website app</button>" : "") + "<button class='btn soft' id='skip'>Continue on website</button></div>";
+  else if(isIOS) h += "On iPhone, install this website like an app: tap the Share button, then Add to Home Screen.</div><div class='row'><button class='btn soft' id='skip'>Continue on website</button></div>";
+  else h += "Open this link on your phone to send texts. Android phones can also download the app.</div><div class='row'><a class='btn' href='" + APK_PAGE + "'><svg viewBox='0 0 24 24'>" + ICONS.download + "</svg>Android app</a><button class='btn soft' id='skip'>Continue</button></div>";
+  b.innerHTML = h; b.hidden = false;
+  $("skip").onclick = () => { S.hide = Date.now() + 7*864e5; save(); b.hidden = true; };
+  if($("inst")) $("inst").onclick = async () => { deferred.prompt(); await deferred.userChoice; deferred = null; b.hidden = true; };
+}
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferred = e; banner(); });
+
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+setTheme(S.theme); refreshLists(); refresh(); drawRun(); banner();
+</script>
+</body>
+</html>
